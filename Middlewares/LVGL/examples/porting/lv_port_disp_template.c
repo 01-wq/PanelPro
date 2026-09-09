@@ -89,12 +89,12 @@ void lv_port_disp_init(void)
     
     // 这里是LVGL画面渲染所使用的缓存空间分配，总共有三种方式
     // 你也可以改为malloc分配空间
-#define BUFFER_METHOD 1
+#define BUFFER_METHOD 2
 #if BUFFER_METHOD == 1
     /* Example for 1) */
     static lv_disp_draw_buf_t draw_buf_dsc_1;
     static lv_color_t buf_1[MY_DISP_HOR_RES * 40];                          /*A buffer for 10 rows*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 40);   /*Initialize the display buffer*/
     /*Set a display buffer*/
     disp_drv.draw_buf = &draw_buf_dsc_1;
 #elif BUFFER_METHOD == 2
@@ -170,11 +170,15 @@ void disp_disable_update(void)
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
+    /* 传入 disp_drv 指针, 供 DMA 完成中断回调通知 LVGL */
+    set_disp_drv_for_flush(disp_drv);
+
     LCD_Color_Fill(area->x1, area->y1,area->x2,area->y2, (uint16_t *)color_p);
 
-    /*IMPORTANT!!!
-     *Inform the graphics library that you are ready with the flushing*/
-    lv_disp_flush_ready(disp_drv);
+    /* --- 关键: 不在这里调 lv_disp_flush_ready ---
+     * 由 HAL_SPI_TxCpltCallback 在 DMA 真正完成后回调
+     * LVGL 在此期间不会动 color_p 指向的缓冲区
+     */
 }
 
 /*OPTIONAL: GPU INTERFACE*/

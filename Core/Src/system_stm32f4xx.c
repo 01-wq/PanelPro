@@ -176,9 +176,14 @@ void SystemInit(void)
 #endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
 
   /* Configure the Vector Table location -------------------------------------*/
-#if defined(USER_VECT_TAB_ADDRESS)
-  SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
-#endif /* USER_VECT_TAB_ADDRESS */
+#ifdef APP_BASE
+  SCB->VTOR = APP_BASE;
+#else
+  SCB->VTOR = FLASH_BASE; /* Vector Table Relocation in Internal FLASH */
+#endif
+// #if defined(USER_VECT_TAB_ADDRESS)
+//   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+// #endif /* USER_VECT_TAB_ADDRESS */
 }
 
 /**

@@ -10,9 +10,7 @@ void SPI_Init_Semaphore(void)
 {
     DMA_SemaphoreHandle = osSemaphoreNew(1, 0, NULL);
     if (DMA_SemaphoreHandle == NULL) {
-        printf("[ERROR] Failed to create DMA semaphore\r\n");
-    } else {
-        printf("[OK] DMA semaphore created\r\n");
+        /* Debug: DMA semaphore creation failed — see test_printf */
     }
 }
 
@@ -21,10 +19,10 @@ void SPI_Init_Semaphore(void)
  */
 void SPI_Set_16Bit_Mode(void)
 {
-    __HAL_SPI_DISABLE(&hspi1);
-    hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
-    HAL_SPI_Init(&hspi1);
-    __HAL_SPI_ENABLE(&hspi1);
+    __HAL_SPI_DISABLE(&hspi2);
+    hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
+    HAL_SPI_Init(&hspi2);
+    __HAL_SPI_ENABLE(&hspi2);
 }
 
 /**
@@ -32,10 +30,10 @@ void SPI_Set_16Bit_Mode(void)
  */
 void SPI_Set_8Bit_Mode(void)
 {
-    __HAL_SPI_DISABLE(&hspi1);
-    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-    HAL_SPI_Init(&hspi1);
-    __HAL_SPI_ENABLE(&hspi1);
+    __HAL_SPI_DISABLE(&hspi2);
+    hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+    HAL_SPI_Init(&hspi2);
+    __HAL_SPI_ENABLE(&hspi2);
 }
 
 /**
@@ -44,8 +42,7 @@ void SPI_Set_8Bit_Mode(void)
 void SPI_Transmit_DMA_16Bit(uint16_t *pData, uint16_t Size)
 {
     // 确保之前的 DMA 已完成
-    if (HAL_DMA_GetState(&hdma_spi1_tx) != HAL_DMA_STATE_READY) {
-        printf("[WARN] DMA not ready, waiting...\r\n");
+    if (HAL_DMA_GetState(&hdma_spi2_tx) != HAL_DMA_STATE_READY) {
         SPI_Wait_DMA_Complete();
     }
     
@@ -53,7 +50,7 @@ void SPI_Transmit_DMA_16Bit(uint16_t *pData, uint16_t Size)
     SPI_Set_16Bit_Mode();
     
     // 启动 DMA 传输
-    HAL_SPI_Transmit_DMA(&hspi1, (uint8_t *)pData, Size * 2);
+    HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)pData, Size * 2);
 }
 
 /**
@@ -65,16 +62,16 @@ void SPI_Wait_DMA_Complete(void)
         // 阻塞等待信号量，超时 500ms
         osStatus_t status = osSemaphoreAcquire(DMA_SemaphoreHandle, 500);
         if (status != osOK) {
-            printf("[ERROR] DMA timeout!\r\n");
+            /* Debug: DMA timeout — see test_printf */
         }
     } else {
         // 降级方案：有限次数轮询（防止完全卡死）
         uint32_t timeout = 10000;  // 最多 10000 次
-        while (HAL_DMA_GetState(&hdma_spi1_tx) != HAL_DMA_STATE_READY && timeout--) {
+        while (HAL_DMA_GetState(&hdma_spi2_tx) != HAL_DMA_STATE_READY && timeout--) {
             osDelay(1);  // 让出 CPU
         }
         if (timeout == 0) {
-            printf("[ERROR] DMA deadlock!\r\n");
+            /* Debug: DMA deadlock — see test_printf */
         }
     }
 }

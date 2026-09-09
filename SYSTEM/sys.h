@@ -5,7 +5,7 @@
 #include "stm32f4xx_hal.h"
 
 #define OS_SUPPORT 	0
-#define SYS_CLK 		100
+#define SYS_CLK 	168
 
 typedef int32_t  s32;
 typedef int16_t s16;

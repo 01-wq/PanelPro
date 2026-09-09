@@ -59,14 +59,21 @@
 #include "gui.h"
 #include "spi.h"
 #include "cmsis_os.h"
-#include "myspi.h"
 #include "lvgl.h"
 
 extern osSemaphoreId_t DMA_SemaphoreHandle;
-extern DMA_HandleTypeDef hdma_spi1_tx;
+extern DMA_HandleTypeDef hdma_spi2_tx;
 
 // DMA传输完成标志
 static volatile uint8_t dma_tx_complete = 1;
+
+// LVGL display driver 指针 — 由 disp_flush 传入, 供 DMA 完成中断回调通知 LVGL
+static lv_disp_drv_t *disp_drv_for_isr = NULL;
+
+void set_disp_drv_for_flush(void *drv)
+{
+    disp_drv_for_isr = (lv_disp_drv_t *)drv;
+}
 /*******************************************************************
  * @name       :void GUI_DrawPoint(u16 x,u16 y,u16 color)
  * @date       :2018-08-09 
@@ -118,54 +125,64 @@ void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color)
 								color:the filled color value
  * @retvalue   :None
 ********************************************************************/
-void LCD_Color_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color_p)
-{  	
-	u16 i,j;			
-	u16 width=ex-sx+1; 		//得到填充的宽度
-	u16 height=ey-sy+1;		//高度
-	uint32_t size = width*height;	//得到填充的像素点个数
-	uint32_t timeout;
-	if(size == 0) return;
+void LCD_Color_Fill(u16 sx, u16 sy, u16 ex, u16 ey, u16 *color_p)
+{
+	u16 width  = ex - sx + 1;
+	u16 height = ey - sy + 1;
+	uint32_t pixel_count = width * height;
+	if (pixel_count == 0) return;
 
-	// 等待上次传输完成
-    timeout = 10000;
-    while(!dma_tx_complete && timeout--)
-    {
-        osDelay(1);
-    }
-    
-    if(timeout == 0)
-    {
-        printf("DMA timeout, resetting...\n");
-        dma_tx_complete = 1;
-        return;
-    }
+	/* ---- 1. 等上次 DMA 完成（信号量阻塞, 不占 CPU）---- */
+	if (DMA_SemaphoreHandle != NULL) {
+		if (osSemaphoreAcquire(DMA_SemaphoreHandle, 500) != osOK) {
+			/* 500ms 超时 — 强制复位 DMA 并恢复 */
+			HAL_DMA_Abort(&hdma_spi2_tx);
+			dma_tx_complete = 1;
+		}
+	} else {
+		/* 降级: 信号量未初始化时用 dma_tx_complete 标志轮询 */
+		uint32_t timeout = 10000;
+		while (!dma_tx_complete && timeout--) {
+			osDelay(1);
+		}
+		if (timeout == 0) {
+			dma_tx_complete = 1;
+			return;
+		}
+	}
 
-	LCD_SetWindows(sx,sy,ex,ey);//设置显示窗口
+	/* ---- 2. 设置 LCD 窗口 ---- */
+	LCD_SetWindows(sx, sy, ex, ey);
 
-	// CS拉低，RS拉高（数据模式）
-    LCD_CS_Clr();
-    LCD_RS_Set();
+	/* ---- 3. CS 拉低, RS 拉高 (数据模式) ---- */
+	LCD_CS_Clr();
+	LCD_RS_Set();
 
-	hspi1.Init.DataSize = SPI_DATASIZE_16BIT;	//设置SPI数据帧大小为16位
-	HAL_SPI_Init(&hspi1);
-	hspi1.Instance->CR1 |= SPI_CR1_DFF;
-	
+	/* ---- 4. 安全切换 SPI 到 16 位模式 ---- */
+	__HAL_SPI_DISABLE(&hspi2);
+	hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
+	HAL_SPI_Init(&hspi2);
+	__HAL_SPI_ENABLE(&hspi2);
+
+	/* ---- 5. 启动 DMA 传输 ---- */
 	dma_tx_complete = 0;
+	if (HAL_SPI_Transmit_DMA(&hspi2, (uint8_t *)color_p, (uint16_t)pixel_count) != HAL_OK) {
+		/* 启动失败 — 立即恢复 SPI 总线 */
+		dma_tx_complete = 1;
+		__HAL_SPI_DISABLE(&hspi2);
+		hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+		HAL_SPI_Init(&hspi2);
+		__HAL_SPI_ENABLE(&hspi2);
+		LCD_CS_Set();
+		/* 释放信号量让下一次能继续 */
+		if (DMA_SemaphoreHandle != NULL) {
+			osSemaphoreRelease(DMA_SemaphoreHandle);
+		}
+	}
 
-	// 启动DMA传输
-    if(HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)color_p, size) != HAL_OK)
-    {
-        printf("DMA start failed!\n");
-        dma_tx_complete = 1;
-        LCD_CS_Set();
-        return;
-    }
-
-	while(__HAL_DMA_GET_COUNTER(&hdma_spi1_tx)!=0);
-
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;	//恢复SPI数据帧大小为8位
-	hspi1.Instance->CR1 &= ~SPI_CR1_DFF;
+	/* --- 关键: 不等待, 不恢复 8 位, 不拉 CS ---
+	 * 由 HAL_SPI_TxCpltCallback 在 DMA 中断中完成
+	 */
 }
 
 // void LCD_Color_Fill(u16 sx, u16 sy, u16 ex, u16 ey, u16 *color_p)
@@ -174,18 +191,19 @@ void LCD_Color_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color_p)
 //     u16 height = ey - sy + 1;
 //     uint32_t size = width * height;
 //     uint32_t i;
-   
+//   
 //     LCD_SetWindows(sx, sy, ex, ey);
-    
+//    
 //     LCD_CS_Clr();
 //     LCD_RS_Set();
-    
+//    
 //     /* 手动逐像素传输 - 已验证可以工作 */
-//     for(i = 0; i < size; i++) {
+//     for(i = 0; i < size; i++) 
+//	 {
 //         LCD_WR_bus(color_p[i] >> 8);
 //         LCD_WR_bus(color_p[i] & 0xFF);
 //     }
-   
+//   
 //     LCD_CS_Set();
 // }
 
@@ -870,28 +888,50 @@ void Gui_Drawbmp16(u16 x,u16 y,const unsigned char *p) //显示40*40 QQ图片
 		picH=*(p+i*2+1);				
 		Lcd_WriteData_16Bit(picH<<8|picL);  	
 	}	
-	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);//恢复显示窗口为全屏	
+	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);//恢复显示窗口为全屏
 }
 
-/********************************************************************
- * SPI DMA 传输完成回调（在中断中调用）
- *******************************************************************/
+/*****************************************************************************
+ * @name       :void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+ * @function   :SPI TX DMA 传输完成中断回调 (覆盖 HAL __weak 默认)
+ *
+ * 调用链:
+ *   DMA1_Stream4_IRQHandler → HAL_DMA_IRQHandler
+ *     → hdma->XferCpltCallback (= SPI_DMATransmitCplt, HAL 内部)
+ *       → 等待 TXE+BSY → 设 SPI State=READY
+ *       → HAL_SPI_TxCpltCallback(hspi)  ← 本函数
+ *
+ * 本回调中完成:
+ *   1. 等待 SPI 移位寄存器清空 (BSY=0)
+ *   2. 安全恢复 SPI 8 位模式
+ *   3. 释放 CS
+ *   4. 释放 DMA 信号量, 通知 LCD_Color_Fill 可启动下次传输
+ *   5. 通知 LVGL 缓冲区已可复用
+ ******************************************************************************/
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    if(hspi == &hspi1)
-    {
-        dma_tx_complete = 1;
-        LCD_CS_Set();  // 拉高片选
-        
-        // 恢复SPI为8位模式
-        hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-        HAL_SPI_Init(&hspi1);
-        hspi1.Instance->CR1 &= ~SPI_CR1_DFF;
-        
-        // 释放信号量
-        if(DMA_SemaphoreHandle != NULL)
-        {
-         osSemaphoreRelease(DMA_SemaphoreHandle);
-        }
+    if (hspi != &hspi2) return;
+
+    /* 1. 等 SPI 移位寄存器清空 (TXE=1 只表示 DR 空, BSY=0 才表示真正发完) */
+    while (__HAL_SPI_GET_FLAG(&hspi2, SPI_FLAG_BSY));
+
+    /* 2. 安全恢复 8 位模式 */
+    __HAL_SPI_DISABLE(&hspi2);
+    hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+    HAL_SPI_Init(&hspi2);
+    __HAL_SPI_ENABLE(&hspi2);
+
+    /* 3. 释放 SPI 总线 */
+    LCD_CS_Set();
+
+    /* 4. 置完成标志 + 释放信号量（唤醒 LCD_Color_Fill 中的等待者）*/
+    dma_tx_complete = 1;
+    if (DMA_SemaphoreHandle != NULL) {
+        osSemaphoreRelease(DMA_SemaphoreHandle);
+    }
+
+    /* 5. 通知 LVGL: 缓冲区已可用, 可渲染下一帧 */
+    if (disp_drv_for_isr != NULL) {
+        lv_disp_flush_ready(disp_drv_for_isr);
     }
 }

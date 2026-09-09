@@ -69,7 +69,7 @@ u16 DeviceCode;
 
 void LCD_WR_bus(u8 dat) //SPI写入一个字节
 {	
-    HAL_SPI_Transmit(&hspi1, &dat, 1, 0xFF);
+    HAL_SPI_Transmit(&hspi2, &dat, 1, 0xFF);
 }
 
 /*****************************************************************************
@@ -167,18 +167,18 @@ void LCD_DrawPoint(u16 x,u16 y)
 ******************************************************************************/	
 void LCD_Clear(u16 Color)
 {
-  unsigned int i,m;  
+    unsigned int i,m;  
 	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);   
 	LCD_CS_Clr();
 	LCD_RS_Set();
 	for(i=0;i<lcddev.height;i++)
 	{
-    for(m=0;m<lcddev.width;m++)
-    {	
+		for(m=0;m<lcddev.width;m++)
+		{	
 			Lcd_WriteData_16Bit(Color);
 		}
 	}
-	 LCD_CS_Set();
+	LCD_CS_Set();
 } 
 
 /*****************************************************************************

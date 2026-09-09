@@ -67,11 +67,8 @@ Page_t* Page_Get_NowPage(void)
  */
 void Page_Back(void)
 {
-    printf("Page_Back called, stack top: %d\r\n", PageStack.top);  // 添加
-    if(page_stack_is_empty(&PageStack)) 
+    if(page_stack_is_empty(&PageStack))
     {
-        printf("Page_Back: stack is empty!\r\n");  // 添加
-        // 正常情况下不应发生，如果发生则静默返回
         return;
     }
 
@@ -112,45 +109,24 @@ void Page_Back(void)
  */
 void Page_Back_Bottom(void)
 {
-    printf("Page_Back_Bottom called, current stack top: %d\r\n", PageStack.top);
-    if(page_stack_is_empty(&PageStack)) 
+    if(page_stack_is_empty(&PageStack))
     {
-        printf("Page_Back_Bottom: stack is empty!\r\n");
-        // 正常情况下不应发生，如果发生则静默返回
         return;
     }
 
-    printf("Popping pages until top == 1, current top: %d\r\n", PageStack.top);
-
     while (PageStack.top > 1)
     {
-        printf("  Popping page at index %d\r\n", PageStack.top - 1);
-        page_stack_pop(&PageStack); // 弹出当前页面直到只剩主页
+        page_stack_pop(&PageStack);
     }
-
-    printf("After pop, stack top: %d\r\n", PageStack.top);
 
     Page_t *bottom_page = PageStack.pages[PageStack.top - 1];
 
-    printf("Bottom page: %p, page->page: %p\r\n", bottom_page, bottom_page->page);
-
     if(bottom_page != NULL) {
         if(bottom_page->init != NULL) {
-            printf("Calling bottom page init...\r\n");
-            bottom_page->init(); // 初始化主页
+            bottom_page->init();
         }
         if(bottom_page->page != NULL) {
-             printf("=== Before lv_scr_load ===\n");
-            printf("  page addr: %p\n", bottom_page->page);
-            printf("  current screen: %p\n", lv_scr_act());
-            printf("  calling lv_scr_load...\n");
-            
             lv_scr_load(bottom_page->page);
-            
-            printf("=== After lv_scr_load ===\n");
-            printf("  current screen: %p\n", lv_scr_act());
-        }else {
-            printf("ERROR: bottom_page->page is NULL!\r\n");
         }
     }
 }
@@ -232,10 +208,8 @@ void Pages_init(void)
 {
     // 强制确保有一个活动屏幕
     if(lv_scr_act() == NULL) {
-        printf("No active screen! Creating default screen...\r\n");
         lv_obj_t *default_scr = lv_obj_create(NULL);
         lv_disp_load_scr(default_scr);
-        printf("Default screen created: %p\r\n", lv_scr_act());
     }
     
     page_stack_init(&PageStack);

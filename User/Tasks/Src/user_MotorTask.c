@@ -48,7 +48,6 @@ void Encoder_PWM_Task(void *argument)
                     target_speed = new_target;
                     xSemaphoreGive(xMutex_Encoder_PWM);
                 }
-                printf("UI set motor speed: %ld%% -> target: %ld\n", received_speed, target_speed);
             }
         }
         // ========== 2. 编码器调节==========
@@ -64,7 +63,6 @@ void Encoder_PWM_Task(void *argument)
                 acc %= ENCODER_SENSITIVITY_DIV;
                 xSemaphoreGive(xMutex_Encoder_PWM);
             }//退出临界区
-        //printf("new_target %d \r\n",new_target);测试代码
             int32_t new_target = target_speed + scaled_delta;
             if (new_target > PWM_MAX) {
                 target_speed = PWM_MAX;

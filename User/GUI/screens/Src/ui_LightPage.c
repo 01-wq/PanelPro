@@ -223,6 +223,5 @@ static void colorwheel_event_cb(lv_event_t * e)
         
         // 非阻塞发送
         osMessageQueuePut(RGB_ColorQueue, &rgb_color, 0, 0);
-        printf("RGB565=0x%04X -> %s (R=%d,G=%d,B=%d)\n", rgb565, color_name, red, green, blue);
     }
 }

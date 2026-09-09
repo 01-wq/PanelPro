@@ -49,12 +49,10 @@ void HardwareInitTask(void *argument)
 		lv_init();
 		lv_port_disp_init();
 
-        printf("After lv_port_disp_init, active screen: %p\n", lv_scr_act());
 		lv_port_indev_init();
 		ui_init();
 
 		Pages_init();
-		printf("[OK] Page Manager initialized!\r\n");
 		xTaskResumeAll();
 		vTaskDelete(NULL);
 	}

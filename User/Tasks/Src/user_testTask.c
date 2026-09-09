@@ -31,9 +31,6 @@ static void refresh_display(void)
 
 //void task(void *argument)
 //{
-//    printf("\r\n========================================\r\n");
-//    printf("  UI Navigation Test Started\r\n");
-//    printf("========================================\r\n\r\n");
 //    
 //    // 等待系统稳定
 //    osDelay(500);
@@ -41,19 +38,12 @@ static void refresh_display(void)
 //    lock();
 //    
 //    // ========== 直接加载 Menu Page 进行测试 ==========
-//    printf("[TEST] Loading Menu Page...\r\n");
-//    printf("[TEST] Menu Page contains: Fan, Light, Calendar, About\r\n");
-//    printf("[TEST] Try to scroll up/down to see all items\r\n");
-//    printf("[TEST] Click any panel to navigate to sub-page\r\n");
-//    printf("[TEST] In sub-page, click 'Back' button to return\r\n");
-//    printf("\r\n");
 //    
 //    // 初始化 Menu Page
 //    ui_MeunPage_screen_init();
 //    
 //    // 检查是否创建成功
 //    if (ui_MeunPage != NULL) {
-//        printf("[OK] ui_MeunPage created at %p\r\n", ui_MeunPage);
 //        
 //        // 启用滚动（如果还没有启用）
 //        lv_obj_set_scroll_dir(ui_MeunPage, LV_DIR_VER);
@@ -66,17 +56,12 @@ static void refresh_display(void)
 //        // 大约需要 480 像素高度
 //        lv_obj_set_height(ui_MeunPage, 480);
 //        
-//        printf("[OK] Scroll enabled, height set to 480\r\n");
 //        
 //        // 加载屏幕
 //        lv_scr_load(ui_MeunPage);
 //        refresh_display();
 //        
-//        printf("[OK] Menu Page loaded successfully!\r\n");
-//        printf("\r\n>>> Now you should see Menu Page on screen <<<\r\n");
-//        printf(">>> If not visible, try scrolling up <<<\r\n\r\n");
 //    } else {
-//        printf("[ERROR] ui_MeunPage is NULL!\r\n");
 //    }
 //    
 //    unlock();

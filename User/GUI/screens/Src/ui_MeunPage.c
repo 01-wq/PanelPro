@@ -67,7 +67,6 @@ void ui_event_AboutPanel(lv_event_t * e)
     if(event_code ==  LV_EVENT_CLICKED) 
     {
         #if ABOUT_PAGE_EN
-            printf("About Panel Clicked!\r\n");  // 添加打印
             Page_Load(&Page_About);
         #else
 

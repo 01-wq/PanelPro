@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "myspi.h"
+#include "SEGGER_RTT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,7 +72,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  SEGGER_RTT_printf(0, "[APP] Entered main()\r\n");
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -81,27 +81,28 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  SEGGER_RTT_printf(0, "[APP] HAL_Init done\r\n");
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  SEGGER_RTT_printf(0, "[APP] Clock done\r\n");
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_SPI1_Init();
-  MX_USART1_UART_Init();
   MX_RTC_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM5_Init();
+  MX_SPI2_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  
+  SEGGER_RTT_printf(0, "[APP] Periph init done\r\n");
+  SEGGER_RTT_printf(0, "[APP] Starting FreeRTOS...\r\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -175,7 +176,14 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+#include <stdio.h>
 
+// 重定向 fputc → SEGGER RTT，覆盖 MicroLIB 的半主机版本
+int fputc(int ch, FILE *f)
+{
+    SEGGER_RTT_PutChar(0, ch);
+    return ch;
+}
 /* USER CODE END 4 */
 
 /**

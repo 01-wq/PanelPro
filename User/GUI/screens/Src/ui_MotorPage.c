@@ -105,6 +105,5 @@ static void motor_arc_event_cb(lv_event_t * e)
     {
         // 非阻塞发送（队列满则丢弃旧消息，只保留最新值）
         osMessageQueuePut(Motor_SpeedQueue, &speed_percent, 0, 0);
-        printf("Motor speed set to: %ld%%\n", speed_percent);
     }
 }

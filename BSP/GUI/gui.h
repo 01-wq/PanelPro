@@ -58,8 +58,7 @@
 #include "sys.h"
 
 void GUI_DrawPoint(u16 x,u16 y,u16 color);
-void LCD_DMA_Init(void);
-void LCD_DMA_TransferComplete(void);
+void set_disp_drv_for_flush(void *drv);
 void LCD_Color_Fill(u16 sx, u16 sy, u16 ex, u16 ey, u16 *color_p);
 void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);
 void LCD_Color_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color_p);
