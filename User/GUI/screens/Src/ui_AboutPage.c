@@ -6,6 +6,8 @@
 #include "ui.h"
 #include "ui_helpers.h"
 #include "ui_AboutPage.h"
+#include "metadata.h"
+#include "stm32f4xx_hal.h"
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_AboutPage = NULL;
 /////////////////// Page Manager ////////////////////
@@ -35,8 +37,42 @@ static lv_obj_t * ui_Label15 = NULL;
 static lv_obj_t * ui_Label16 = NULL;
 static lv_obj_t * ui_Label17 = NULL;
 static lv_obj_t * ui_Label18 = NULL;
-// event funtions
 
+static lv_obj_t * ui_OTAButton = NULL;
+
+// event funtions
+static void msgbox_event_cb(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    uint16_t btn = lv_msgbox_get_active_btn(mbox);
+    lv_msgbox_close(mbox);
+    
+    if(btn == 1 && Metadata_Invalidate() == 0)
+    {
+        NVIC_SystemReset();
+    }
+    else
+    {
+
+    }
+}
+
+void ui_event_OTAButton(lv_event_t * e)
+{
+    if(lv_event_get_code(e) != LV_EVENT_CLICKED)
+    {
+        return;
+    }
+
+    static const char * btns[] = {"取消","确认",""};
+    lv_obj_t * mbox = lv_msgbox_create(NULL,"系统升级","确认进入升级模式?",btns,false);
+    
+    lv_obj_set_style_text_font(lv_msgbox_get_title(mbox),&ui_font_zhongyaun16,0);
+    lv_obj_set_style_text_font(lv_msgbox_get_text(mbox),&ui_font_zhongyaun16,0);
+    lv_obj_set_style_text_font(lv_msgbox_get_btns(mbox),&ui_font_zhongyaun16,LV_PART_ITEMS);
+
+    lv_obj_add_event_cb(mbox,msgbox_event_cb,LV_EVENT_VALUE_CHANGED,NULL);
+}
 // build funtions
 
 void ui_AboutPage_screen_init(void)
@@ -227,6 +263,18 @@ void ui_AboutPage_screen_init(void)
     lv_obj_set_align(ui_Label18, LV_ALIGN_LEFT_MID);
     lv_label_set_text(ui_Label18, "朱炫兆2320140023");
     lv_obj_set_style_text_font(ui_Label18, &ui_font_zhongyaun16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_OTAButton = lv_btn_create(ui_AboutPage);
+    lv_obj_set_size(ui_OTAButton, 120, 40);
+    lv_obj_set_align(ui_OTAButton, LV_ALIGN_LEFT_MID);
+    lv_obj_set_x(ui_OTAButton, 20);
+    lv_obj_set_y(ui_OTAButton, 375);          // 接在 ui_Label18下面，按屏幕效果调
+    lv_obj_add_event_cb(ui_OTAButton, ui_event_OTAButton, LV_EVENT_CLICKED,NULL);
+
+    lv_obj_t * l = lv_label_create(ui_OTAButton);
+    lv_label_set_text(l, "系统升级");
+    lv_obj_set_style_text_font(l, &ui_font_zhongyaun16, 0);
+    lv_obj_center(l);
 
     Page_About.page = ui_AboutPage;
 }

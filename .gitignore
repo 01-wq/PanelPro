@@ -14,3 +14,7 @@ JLinkSettings.ini
 技术文档/
 资料/
 MDK-ARM/.vscode/keil-assistant.log
+MDK-ARM/pro.BAT
+# 培训/导师文档：不进仓库（文件留在本地）
+Docs/BT_OTA_Training.md
+Docs/OTA_协议规格.md

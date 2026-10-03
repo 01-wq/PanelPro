@@ -40,6 +40,8 @@
                 "e:\\PanelPro-main\\PanelPro\\User\\GUI\\image",
                 "e:\\PanelPro-main\\PanelPro\\BSP\\TOUCH_SENSOR",
                 "e:\\PanelPro-main\\PanelPro\\SEGGER_RTT_V688c\\RTT",
+                "e:\\PanelPro-main\\F407_IAR\\Bootloader\\Inc",
+                "e:\\PanelPro-main\\F407_IAR\\Bootloader\\Src",
                 "E:\\ProgramFiles\\MDK\\Core\\ARM\\ARMCC\\include",
                 "E:\\ProgramFiles\\MDK\\Core\\ARM\\ARMCC\\include\\rw",
                 "e:\\PanelPro-main\\PanelPro\\MDK-ARM",

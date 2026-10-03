@@ -25,6 +25,3 @@ void change_color(uint8_t color);
 
 
 #endif /* RGB_LED_H */
-	 
-	 
-	 
