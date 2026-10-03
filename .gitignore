@@ -1,4 +1,23 @@
-MDK-ARM/pro/
+gitignore
+# ===== 仓库根忽略（2026-10-03 仓库上移后新建）=====
+# 原则：只收"项目本身"；个人 / 培训 / 元材料 与构建产物一律不收
+# 注：PanelPro/ 子目录另有自己的 .gitignore（原有规则继续生效）
+
+# —— 个人与培训材料（文件保留在本地）——
+SESSION_HANDOFF.md
+me/
+项目经验*.docx
+rtt_log.txt
+CLAUDE.md
+.claude/
+
+# —— Python 工具目录：只收 .py 脚本（缓存 / 日志 / 产物 /
+说明文档全不收）——
+py/*
+!py/*.py
+
+# —— 构建产物（镜像 PanelPro/.gitignore 的通用规则，覆盖 F407_IAR 等）——
+F407_IAR/MDK-ARM/F407_IAR/
 *.o
 *.d
 *.crf
@@ -11,10 +30,6 @@ MDK-ARM/pro/
 *.uvguix.*
 JLinkLog.txt
 JLinkSettings.ini
-技术文档/
+keil-assistant.log
 资料/
-MDK-ARM/.vscode/keil-assistant.log
-MDK-ARM/pro.BAT
-# 培训/导师文档：不进仓库（文件留在本地）
-Docs/BT_OTA_Training.md
-Docs/OTA_协议规格.md
+技术文档/
