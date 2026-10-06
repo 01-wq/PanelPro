@@ -65,11 +65,17 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOD, Red_Pin|Green_Pin|Blue_Pin|MOTOR_AIN2_Pin
                           |MOTOR_AIN1_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : KEY3_Pin KEY1_Pin */
-  GPIO_InitStruct.Pin = KEY3_Pin|KEY1_Pin;
+  /*Configure GPIO pin : KEY3_Pin */
+  GPIO_InitStruct.Pin = KEY3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(KEY3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : KEY1_Pin */
+  GPIO_InitStruct.Pin = KEY1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(KEY1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : T_CS_Pin */
   GPIO_InitStruct.Pin = T_CS_Pin;

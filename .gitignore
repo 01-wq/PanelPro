@@ -33,3 +33,5 @@ JLinkSettings.ini
 keil-assistant.log
 资料/
 技术文档/
+MDK-ARM/pro.uvoptx
+.vscode/

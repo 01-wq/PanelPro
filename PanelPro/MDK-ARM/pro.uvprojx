@@ -81,7 +81,7 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
+            <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>$K\ARM\ARMCC\bin\fromelf.exe --bin --output="E:\PanelPro-main\py\pro.bin" "#L"</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx,APP_BASE=0x800C000</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../BSP/LCD;../BSP/AT24CXX;../BSP/IIC;../BSP/TOUCH;../BSP/GUI;../BSP/KEY;../BSP/SPI;../BSP/RGB;../SYSTEM;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/LVGL;../Middlewares/LVGL/examples/porting;../Middlewares/LVGL/src;../Middlewares/LVGL/src/core;../Middlewares/LVGL/src/draw;../Middlewares/LVGL/src/draw/sw;../Middlewares/LVGL/src/extra;../Middlewares/LVGL/demos;../Middlewares/LVGL/demos/stress;../User/Tasks/Inc;../User/Tasks/Src;../User/Func/Inc;../User/Func/Src;../User/GUI;../User/GUI/screens/Inc;../User/GUI/screens/Src;../User/GUI/fonts;../User/GUI/image;../BSP/TOUCH_SENSOR;../SEGGER_RTT_V688c/RTT;..\..\F407_IAR\Bootloader\Inc;..\..\F407_IAR\Bootloader\Src</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../BSP/LCD;../BSP/AT24CXX;../BSP/IIC;../BSP/TOUCH;../BSP/GUI;../BSP/KEY;../BSP/SPI;../BSP/RGB;../SYSTEM;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/LVGL;../Middlewares/LVGL/examples/porting;../Middlewares/LVGL/src;../Middlewares/LVGL/src/core;../Middlewares/LVGL/src/draw;../Middlewares/LVGL/src/draw/sw;../Middlewares/LVGL/src/extra;../Middlewares/LVGL/demos;../Middlewares/LVGL/demos/stress;../User/Tasks/Inc;../User/Tasks/Src;../User/Func/Inc;../User/Func/Src;../User/GUI;../User/GUI/screens/Inc;../User/GUI/screens/Src;../User/GUI/fonts;../User/GUI/image;../BSP/TOUCH_SENSOR;../SEGGER_RTT_V688c/RTT;../../F407_IAR/Bootloader/Inc;../../F407_IAR/Bootloader/Src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
